@@ -51,6 +51,8 @@ public class ${entity.className}DAOimpl implements ${entity.className}DAO{
 				<#list entity.properties as property>
 				${entity.className?uncap_first}.set${property.propertyName?cap_first}(rs.get<#if property.javaType?cap_first == "Integer">Int<#else>${property.javaType?cap_first}</#if>("${property.propertyName}"));
 				</#list>
+			}  else {
+				${entity.className?uncap_first}.set_status(2);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -95,7 +97,7 @@ public class ${entity.className}DAOimpl implements ${entity.className}DAO{
 		}
 		return newid;
     }
-    public Integer delete${entity.className?cap_first}ById(Integer id){
+    public Integer delete${entity.className?cap_first}(Integer id){
     	Connection conn = null;
 		PreparedStatement ps = null;
 		Integer rtn = -1;
@@ -103,6 +105,32 @@ public class ${entity.className}DAOimpl implements ${entity.className}DAO{
 			conn = jh.getConnection();
 			ps = conn.prepareStatement("UPDATE ${entity.javaPackage}_${entity.className} SET _status=2 WHERE _id=?");
 			ps.setInt(1, id);
+			Integer num = ps.executeUpdate();
+			if (num == 0){
+				rtn = 1;
+			} else {
+				rtn = 0;
+				}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			jh.close(conn);
+		}
+		return rtn;
+    }
+    public Integer modify${entity.className?cap_first}(${entity.className} ${entity.className?uncap_first}){
+    	Connection conn = null;
+		PreparedStatement ps = null;
+		Integer rtn = -1;
+		try {
+			conn = jh.getConnection();
+			ps = conn.prepareStatement("UPDATE ${entity.javaPackage}_${entity.className} SET <#list entity.properties as property>${property.propertyName}<#if property_has_next>,</#if></#list> WHERE _id=?");
+			
+			<#list entity.properties as property>
+			ps.set<#if property.javaType?cap_first == "Integer">Int<#else>${property.javaType?cap_first}</#if>(${property_index+1},${entity.className?uncap_first}.get${property.propertyName?cap_first}());
+			</#list>
+			
+			ps.setInt(${entity.properties?size+1},${entity.className?uncap_first}.get_id());
 			Integer num = ps.executeUpdate();
 			if (num == 0){
 				rtn = 1;
