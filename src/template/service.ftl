@@ -39,7 +39,60 @@ public class ${entity.className}Service{
     }
     public String get${entity.className?cap_first}ById(String param){
     	Integer status = -1;
+    	Map<String, String> map = new HashMap<String, String>();
 		JSONObject paramjson = JSONObject.fromObject(param);
-		
+		${entity.className} ${entity.className?uncap_first} = new ${entity.className}();
+		${entity.className?uncap_first} = ${entity.className?uncap_first}Dao.get${entity.className?cap_first}ById(paramjson.getInt("${entity.className?uncap_first}Id"));
+	  	if (${entity.className?uncap_first}.get_status() != 2) {//_status = 2 means no such entity for the id
+	  		status = 0;
+	  		<#list entity.properties as property>
+	  		map.put("${property.propertyName}",${entity.className?uncap_first}.get${property.propertyName?cap_first}().toString());
+   			</#list>
+	  	} else {
+			status = 1;// no such entity for the id
+			}
+		map.put("status", status.toString());
+		JSONObject json = JSONObject.fromObject(map);
+		return json.toString();	
+    }
+    public String add${entity.className?cap_first}(String param){
+    	Integer status = -1;
+		Integer ${entity.className?uncap_first}id = -1;
+		JSONObject paramjson = JSONObject.fromObject(param);
+		${entity.className} ${entity.className?uncap_first} = new ${entity.className}();
+		<#list entity.properties as property>
+			${entity.className?uncap_first}.set${property.propertyName?cap_first}(paramjson.get<#if property.javaType?cap_first == "Integer">Int<#else>${property.javaType?cap_first}</#if>("${property.propertyName}"));
+   		</#list>
+   		${entity.className?uncap_first}id = ${entity.className?uncap_first}Dao.add${entity.className?cap_first}(${entity.className?uncap_first});
+		if (${entity.className?uncap_first}id > 0){
+			status = 0;
+		}
+		Map<String, String> map = new HashMap<String, String>();
+		map.put("status", status.toString());
+		map.put("${entity.className?uncap_first}id", ${entity.className?uncap_first}id.toString());
+		JSONObject json = JSONObject.fromObject(map);
+		return json.toString();
+    }
+    public String modify${entity.className?cap_first}(String param){
+    	Integer status = -1;
+		JSONObject paramjson = JSONObject.fromObject(param);
+		${entity.className} ${entity.className?uncap_first} = new ${entity.className}();
+		<#list entity.properties as property>
+			${entity.className?uncap_first}.set${property.propertyName?cap_first}(paramjson.get<#if property.javaType?cap_first == "Integer">Int<#else>${property.javaType?cap_first}</#if>("${property.propertyName}"));
+   		</#list>
+   		status = ${entity.className?uncap_first}Dao.modify${entity.className?cap_first}(${entity.className?uncap_first});
+		Map<String, String> map = new HashMap<String, String>();
+		map.put("status", status.toString());	
+		JSONObject json = JSONObject.fromObject(map);
+		return json.toString();
+    }
+    public String delete${entity.className?cap_first}(String param){
+    	Integer status = -1;
+		JSONObject paramjson = JSONObject.fromObject(param);
+		status = ${entity.className?uncap_first}Dao.delete${entity.className?cap_first}(paramjson.getInt("${entity.className?uncap_first}Id"));
+		Map<String, String> map = new HashMap<String, String>();
+		map.put("status", status.toString());
+		JSONObject json = JSONObject.fromObject(map);
+		return json.toString();
     }
 }
